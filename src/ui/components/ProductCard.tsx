@@ -1,6 +1,6 @@
 import type { Product } from "@/src/domain/entities/product";
 
-const ADMIN_WHATSAPP = "+53 51694749"; 
+const ADMIN_WHATSAPP = "+5351694749"; 
 
 export function ProductCard({ product }: { product: Product }) {
   const contactMessage = encodeURIComponent(
