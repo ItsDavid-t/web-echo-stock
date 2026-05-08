@@ -13,11 +13,11 @@ export function ProductCard({ product }: { product: Product }) {
       <img
         src={product.imgUrl}
         alt={product.name}
-        className="mb-5 h-48 w-full rounded-2xl object-cover"
+        className="mb-5 h-56 w-full rounded-2xl object-cover sm:h-64"
       />
-      <div className="space-y-4">
-        <div className="flex items-center justify-between text-sm text-[var(--muted)]">
-          <span>{product.categoryName ?? product.category ?? "Sin categoría"}</span>
+      <div className="space-y-5">
+        <div className="flex flex-col gap-3 text-sm text-[var(--muted)] sm:flex-row sm:items-center sm:justify-between">
+          <span className="font-medium text-[var(--foreground)]">{product.categoryName ?? product.category ?? "Sin categoría"}</span>
           <span
             className={
               product.status === "available"
@@ -32,24 +32,24 @@ export function ProductCard({ product }: { product: Product }) {
               : "Agotado"}
           </span>
         </div>
-        <div className="space-y-2">
-          <h2 className="text-xl font-semibold text-[var(--foreground)]">{product.name}</h2>
+        <div className="space-y-3">
+          <h2 className="text-2xl font-semibold text-[var(--foreground)] sm:text-3xl">{product.name}</h2>
           <p className="text-sm leading-6 text-[var(--muted)]">
             {product.description ?? "Sin descripción adicional."}
           </p>
         </div>
-        <div className="grid gap-3 rounded-3xl bg-[var(--surface-alt)] p-4 text-sm text-[var(--foreground)] shadow-sm">
-          <div className="flex items-center justify-between gap-4">
+        <div className="grid gap-3 rounded-3xl bg-[var(--surface-alt)] p-4 text-sm text-[var(--foreground)] shadow-sm sm:grid-cols-2">
+          <div className="flex flex-col gap-1">
             <span className="font-medium">Clasificación</span>
-            <span>{product.classification ?? "No aplica"}</span>
+            <span className="text-[var(--muted)]">{product.classification ?? "No aplica"}</span>
           </div>
-          <div className="flex items-center justify-between gap-4">
+          <div className="flex flex-col gap-1">
             <span className="font-medium">Precio</span>
-            <span>{product.price != null ? `${product.currency ?? "USD"} ${product.price.toFixed(2)}` : "Consultar"}</span>
+            <span className="text-[var(--muted)]">{product.price != null ? `${product.currency ?? "USD"} ${product.price.toFixed(2)}` : "Consultar"}</span>
           </div>
-          <div className="flex items-center justify-between gap-4">
+          <div className="flex flex-col gap-1 sm:col-span-2">
             <span className="font-medium">Publicado</span>
-            <span>{new Date(product.createdAt).toLocaleDateString()}</span>
+            <span className="text-[var(--muted)]">{new Date(product.createdAt).toLocaleDateString()}</span>
           </div>
         </div>
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -57,11 +57,11 @@ export function ProductCard({ product }: { product: Product }) {
             href={whatsappUrl}
             target="_blank"
             rel="noreferrer"
-            className="inline-flex items-center justify-center rounded-full bg-[var(--accent)] px-5 py-3 text-center text-sm font-semibold text-white transition hover:bg-[var(--accent-dark)]"
+            className="inline-flex min-h-[44px] w-full items-center justify-center rounded-full bg-[var(--accent)] px-5 py-3 text-center text-sm font-semibold text-white transition hover:bg-[var(--accent-dark)] sm:w-auto"
           >
             Estoy interesado
           </a>
-          <span className="text-sm text-[var(--muted)]">
+          <span className="text-sm leading-6 text-[var(--muted)]">
             Contacta al admin para comprar o reservar este producto.
           </span>
         </div>

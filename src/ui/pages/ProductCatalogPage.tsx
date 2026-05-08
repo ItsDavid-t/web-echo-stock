@@ -38,27 +38,13 @@ export function ProductCatalogPage({
     [categories]
   );
 
-  const childCategories = useMemo(
-    () =>
-      selectedCategoryId == null
-        ? []
-        : categories.filter(
-            (category) => category.parentId === selectedCategoryId
-          ),
-    [categories, selectedCategoryId]
-  );
-
   const categoryIdsToFilter = useMemo(() => {
     if (selectedCategoryId == null) {
       return null;
     }
 
-    const childIds = categories
-      .filter((category) => category.parentId === selectedCategoryId)
-      .map((category) => category.id);
-
-    return [selectedCategoryId, ...childIds];
-  }, [categories, selectedCategoryId]);
+    return [selectedCategoryId];
+  }, [selectedCategoryId]);
 
   const classifications = useMemo(
     () =>
@@ -113,9 +99,9 @@ export function ProductCatalogPage({
 
   return (
     <main className="mx-auto w-full max-w-7xl px-6 py-10 sm:px-8 lg:px-10">
-      <header className="mb-10 space-y-6">
-        <div className="flex flex-col gap-4 rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-[var(--shadow)] sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center gap-4">
+      <header className="mb-10">
+        <div className="flex flex-col gap-6 rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-[var(--shadow)] sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-1 flex-col gap-4 sm:flex-row sm:items-center">
             <Image
               src="/app_icon.png"
               alt="Echo Stock"
@@ -123,12 +109,12 @@ export function ProductCatalogPage({
               height={48}
               className="rounded-xl"
             />
-            <div className="space-y-1">
+            <div className="space-y-2">
               <div className="inline-flex items-center rounded-full bg-[var(--accent-soft)] px-4 py-2 text-sm font-medium text-[var(--accent)]">
                 Echo Stock
               </div>
               <div>
-                <h1 className="text-4xl font-semibold tracking-tight text-[var(--foreground)]">
+                <h1 className="text-3xl font-semibold tracking-tight text-[var(--foreground)] sm:text-4xl">
                   Catálogo de productos
                 </h1>
               </div>
@@ -138,7 +124,7 @@ export function ProductCatalogPage({
         </div>
       </header>
 
-      <section className="mb-10 space-y-4">
+      <section className="mb-10 space-y-5">
         <div className="grid gap-3 sm:grid-cols-[1fr_auto]">
           <label className="sr-only" htmlFor="product-search">
             Buscar productos
@@ -151,42 +137,45 @@ export function ProductCatalogPage({
             placeholder="Buscar por nombre, categoría o clasificación"
             className="w-full rounded-3xl border border-[var(--border)] bg-[var(--surface)] px-4 py-3 text-sm text-[var(--foreground)] outline-none transition focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent-soft)]"
           />
-          <div className="rounded-3xl bg-[var(--surface)] p-3 text-sm text-[var(--muted)] shadow-[var(--shadow)]">
+          <div className="rounded-3xl bg-[var(--surface)] p-4 text-sm text-[var(--muted)] shadow-[var(--shadow)] sm:text-right">
             <p className="font-medium text-[var(--foreground)]">{filteredProducts.length}</p>
             <p>productos encontrados</p>
           </div>
         </div>
 
         <div className="space-y-4 rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-[var(--shadow)]">
-          <div className="flex flex-wrap gap-2">
-            <button
-              type="button"
-              onClick={() => setSelectedCategoryId(null)}
-              className={`rounded-full px-4 py-2 text-sm transition ${
-                selectedCategoryId == null
-                  ? "bg-[var(--accent)] text-white"
-                  : "bg-[var(--surface-alt)] text-[var(--foreground)] hover:bg-[var(--surface)]"
-              }`}
-            >
-              Todas
-            </button>
-            {rootCategories.map((category) => (
+          <div className="space-y-3">
+            <p className="text-sm uppercase tracking-[0.24em] text-[var(--muted)]">Categorías</p>
+            <div className="flex flex-wrap gap-2">
               <button
-                key={category.id}
                 type="button"
-                onClick={() => {
-                  setSelectedCategoryId(category.id);
-                  setSelectedClassification("");
-                }}
+                onClick={() => setSelectedCategoryId(null)}
                 className={`rounded-full px-4 py-2 text-sm transition ${
-                  selectedCategoryId === category.id
+                  selectedCategoryId == null
                     ? "bg-[var(--accent)] text-white"
                     : "bg-[var(--surface-alt)] text-[var(--foreground)] hover:bg-[var(--surface)]"
                 }`}
               >
-                {category.name}
+                Todas
               </button>
-            ))}
+              {rootCategories.map((category) => (
+                <button
+                  key={category.id}
+                  type="button"
+                  onClick={() => {
+                    setSelectedCategoryId(category.id);
+                    setSelectedClassification("");
+                  }}
+                  className={`rounded-full px-4 py-2 text-sm transition ${
+                    selectedCategoryId === category.id
+                      ? "bg-[var(--accent)] text-white"
+                      : "bg-[var(--surface-alt)] text-[var(--foreground)] hover:bg-[var(--surface)]"
+                  }`}
+                >
+                  {category.name}
+                </button>
+              ))}
+            </div>
           </div>
 
           {classifications.length > 0 && (
@@ -224,7 +213,6 @@ export function ProductCatalogPage({
             </div>
           )}
         </div>
-  
       </section>
 
       {filteredProducts.length > 0 ? (
