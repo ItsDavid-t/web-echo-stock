@@ -129,7 +129,7 @@ export function ProductCatalogPage({
               </div>
               <div>
                 <h1 className="text-4xl font-semibold tracking-tight text-[var(--foreground)]">
-           Ines Te adoro mucho joder muak
+                  Catálogo de productos
                 </h1>
               </div>
             </div>
