@@ -129,7 +129,7 @@ export function ProductCatalogPage({
               </div>
               <div>
                 <h1 className="text-4xl font-semibold tracking-tight text-[var(--foreground)]">
-                  Catálogo de productos
+           Ines Te adoro mucho joder muak
                 </h1>
               </div>
             </div>
@@ -188,26 +188,6 @@ export function ProductCatalogPage({
               </button>
             ))}
           </div>
-
-          {selectedCategoryId != null && childCategories.length > 0 && (
-            <div className="space-y-3">
-              <p className="text-sm uppercase tracking-[0.24em] text-[var(--muted)]">
-                Subcategorías
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {childCategories.map((category) => (
-                  <button
-                    key={category.id}
-                    type="button"
-                    onClick={() => setSelectedCategoryId(category.id)}
-                    className="rounded-full bg-[var(--surface-alt)] px-4 py-2 text-sm text-[var(--foreground)] transition hover:bg-[var(--surface)]"
-                  >
-                    {category.name}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
 
           {classifications.length > 0 && (
             <div className="space-y-3">
