@@ -21,8 +21,7 @@ function mapSupabaseProduct(record: Record<string, unknown>): Product {
         : String(record["classification"]),
     categoryId:
       record["categoryId"] == null ? null : Number(record["categoryId"]),
-    categoryName:
-      record["category_name"] == null ? null : String(record["category_name"]),
+    categoryName: null,
     imgUrl:
       String(record["imgUrl"] ?? "") ||
       "https://via.placeholder.com/320x240?text=Sin+imagen",
@@ -34,7 +33,7 @@ function mapSupabaseProduct(record: Record<string, unknown>): Product {
 export class SupabaseProductRepository implements ProductRepository {
   async fetchAll(): Promise<Product[]> {
     const response = await supabaseFetch<Record<string, unknown>[]>(
-      "Product?select=id,name,description,classification,categoryId,imgUrl,status,createdAt,category_name&order=createdAt.desc"
+      "Product?select=id,name,description,classification,categoryId,imgUrl,status,createdAt&order=createdAt.desc"
     );
 
     return response.map(mapSupabaseProduct);
@@ -42,7 +41,7 @@ export class SupabaseProductRepository implements ProductRepository {
 
   async fetchById(id: string): Promise<Product | null> {
     const response = await supabaseFetch<Record<string, unknown>[]>(
-      `Product?select=id,name,description,classification,categoryId,imgUrl,status,createdAt,category_name&eq(id,${encodeURIComponent(
+      `Product?select=id,name,description,classification,categoryId,imgUrl,status,createdAt&eq(id,${encodeURIComponent(
         id
       )})&limit=1`
     );

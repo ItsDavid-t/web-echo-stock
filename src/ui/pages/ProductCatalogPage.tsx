@@ -33,6 +33,20 @@ export function ProductCatalogPage({
     [categories]
   );
 
+  // Función para encontrar la categoría raíz (sin parentId) de una categoría
+  const getRootCategory = useMemo(
+    () => (categoryId: number): Category | null => {
+      let currentCategory = categoriesById.get(categoryId);
+      
+      while (currentCategory && currentCategory.parentId != null) {
+        currentCategory = categoriesById.get(currentCategory.parentId);
+      }
+      
+      return currentCategory || null;
+    },
+    [categoriesById]
+  );
+
   const rootCategories = useMemo(
     () => categories.filter((category) => category.parentId == null),
     [categories]
@@ -61,16 +75,15 @@ export function ProductCatalogPage({
   const productsWithCategoryName = useMemo(
     () =>
       products.map((product) => {
-        let categoryName =
-          product.categoryName ||
-          product.category ||
-          (product.categoryId != null
-            ? categoriesById.get(product.categoryId)?.name
-            : null) ||
-          null;
+        let categoryName: string = product.categoryName || product.category || "";
 
-        // Si no hay categoryName ni categoryId, pero hay classification,
-        // mantener la clasificación visible en la tarjeta
+        // Si hay categoryId, obtener el nombre de la categoría raíz
+        if (!categoryName && product.categoryId != null) {
+          const rootCategory = getRootCategory(product.categoryId);
+          categoryName = rootCategory?.name || "";
+        }
+
+        // Fallback: Sin categoría
         if (!categoryName) {
           categoryName = "Sin categoría";
         }
@@ -80,13 +93,14 @@ export function ProductCatalogPage({
           categoryName,
         };
       }),
-    [products, categoriesById]
+    [products, getRootCategory]
   );
 
   const filteredProducts = useMemo(() => {
     return productsWithCategoryName.filter((product) => {
       if (categoryIdsToFilter && product.categoryId != null) {
-        if (!categoryIdsToFilter.includes(product.categoryId)) {
+        const rootCategory = getRootCategory(product.categoryId);
+        if (!categoryIdsToFilter.includes(rootCategory?.id ?? -1)) {
           return false;
         }
       }
@@ -107,7 +121,7 @@ export function ProductCatalogPage({
         String(product.classification ?? "").toLowerCase().includes(normalizedSearch)
       );
     });
-  }, [search, selectedCategoryId, selectedClassification, productsWithCategoryName, categoryIdsToFilter]);
+  }, [search, selectedCategoryId, selectedClassification, productsWithCategoryName, categoryIdsToFilter, getRootCategory]);
 
   return (
     <main className="mx-auto w-full max-w-7xl px-6 py-10 sm:px-8 lg:px-10">
