@@ -60,14 +60,26 @@ export function ProductCatalogPage({
 
   const productsWithCategoryName = useMemo(
     () =>
-      products.map((product) => ({
-        ...product,
-        categoryName:
+      products.map((product) => {
+        let categoryName =
           product.categoryName ||
           product.category ||
-          categoriesById.get(product.categoryId ?? -1)?.name ||
-          "Sin categoría",
-      })),
+          (product.categoryId != null
+            ? categoriesById.get(product.categoryId)?.name
+            : null) ||
+          null;
+
+        // Si no hay categoryName ni categoryId, pero hay classification,
+        // mantener la clasificación visible en la tarjeta
+        if (!categoryName) {
+          categoryName = "Sin categoría";
+        }
+
+        return {
+          ...product,
+          categoryName,
+        };
+      }),
     [products, categoriesById]
   );
 
