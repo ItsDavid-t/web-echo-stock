@@ -3,12 +3,7 @@
 import { useEffect } from "react";
 import type { Product } from "@/src/domain/entities/product";
 import type { ShopProfile } from "@/src/domain/entities/shopProfile";
-
-const FALLBACK_WHATSAPP = "5351694749";
-
-function normalizeWhatsAppNumber(value: string): string {
-  return value.replace(/\D/g, "");
-}
+import { WhatsAppContactService } from "@/src/domain/services/whatsappContactService";
 
 export function ProductDetailSheet({
   product,
@@ -44,13 +39,7 @@ export function ProductDetailSheet({
     return null;
   }
 
-  const whatsappNumber = normalizeWhatsAppNumber(
-    shop?.whatsappNumber || FALLBACK_WHATSAPP
-  );
-  const contactMessage = encodeURIComponent(
-    `Hola, estoy interesado en el producto ${product.name}. ¿Podrían contactarme por favor?`
-  );
-  const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${contactMessage}`;
+  const contact = WhatsAppContactService.build(product, shop);
 
   return (
     <div className="fixed inset-0 z-[60] flex items-end justify-center sm:items-center sm:p-6">
@@ -120,7 +109,7 @@ export function ProductDetailSheet({
           </div>
 
           <a
-            href={whatsappUrl}
+            href={contact.url}
             target="_blank"
             rel="noreferrer"
             className="inline-flex min-h-[48px] w-full items-center justify-center rounded-full bg-[var(--accent)] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-strong)]"

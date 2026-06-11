@@ -1,6 +1,6 @@
 import type { Category } from "@/src/domain/entities/category";
 import type { CategoryRepository } from "@/src/domain/repositories/categoryRepository";
-import { supabaseFetch } from "@/src/lib/supabase";
+import { supabaseFetch } from "@/src/infra/supabase/supabaseClient";
 
 function resolveShopId(record: Record<string, unknown>): string | null {
   const value = record["shopId"] ?? record["shop_id"];

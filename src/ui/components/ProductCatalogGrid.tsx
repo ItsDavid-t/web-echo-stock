@@ -1,9 +1,8 @@
 import { useEffect, useRef } from "react";
 import type { Product } from "@/src/domain/entities/product";
+import type { CatalogViewMode } from "@/src/domain/types/catalog";
 import { ProductCard } from "./ProductCard";
 import { ProductListItem } from "./ProductListItem";
-
-export type CatalogViewMode = "grid" | "list";
 
 export function ProductCatalogGrid({
   products,

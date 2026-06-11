@@ -1,6 +1,6 @@
 import type { ShopProfile } from "@/src/domain/entities/shopProfile";
 import type { ShopProfileRepository } from "@/src/domain/repositories/shopProfileRepository";
-import { supabaseFetch } from "@/src/lib/supabase";
+import { supabaseFetch } from "@/src/infra/supabase/supabaseClient";
 
 function mapSupabaseShopProfile(record: Record<string, unknown>): ShopProfile {
   return {

@@ -1,6 +1,6 @@
 import type { Product } from "@/src/domain/entities/product";
 import type { ProductRepository } from "@/src/domain/repositories/productRepository";
-import { supabaseFetch } from "@/src/lib/supabase";
+import { supabaseFetch } from "@/src/infra/supabase/supabaseClient";
 
 function normalizeStatus(value: unknown): Product["status"] {
   const status = String(value ?? "available").trim();
