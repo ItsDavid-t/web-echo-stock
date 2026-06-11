@@ -26,18 +26,32 @@ export default async function Home({
     new LoadShopProfilesUseCase(shopProfileRepository)
   );
 
-  const [products, categories, shops] = await Promise.all([
-    productController.getCatalog(lockedShopId ?? null),
-    categoryController.getAllCategories(lockedShopId ?? null),
-    shopProfileController.getAllShops(),
-  ]);
+  try {
+    const [products, categories, shops] = await Promise.all([
+      productController.getCatalog(lockedShopId ?? null),
+      categoryController.getAllCategories(lockedShopId ?? null),
+      shopProfileController.getAllShops(),
+    ]);
 
-  return (
-    <ProductCatalogPage
-      products={products}
-      categories={categories}
-      shops={shops}
-      lockedShopId={lockedShopId ?? null}
-    />
-  );
+    return (
+      <ProductCatalogPage
+        products={products}
+        categories={categories}
+        shops={shops}
+        lockedShopId={lockedShopId ?? null}
+      />
+    );
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Error desconocido al cargar datos";
+
+    return (
+      <main className="mx-auto flex min-h-screen max-w-3xl items-center px-6 py-16">
+        <div className="w-full rounded-3xl border border-red-300 bg-red-50 p-8 text-red-900">
+          <h1 className="text-2xl font-semibold">No se pudo cargar el catálogo</h1>
+          <p className="mt-3 text-sm leading-6">{message}</p>
+        </div>
+      </main>
+    );
+  }
 }

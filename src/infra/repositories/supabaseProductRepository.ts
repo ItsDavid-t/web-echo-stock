@@ -2,9 +2,6 @@ import type { Product } from "@/src/domain/entities/product";
 import type { ProductRepository } from "@/src/domain/repositories/productRepository";
 import { supabaseFetch } from "@/src/lib/supabase";
 
-const PRODUCT_SELECT =
-  "id,name,description,classification,categoryId,shop_id,imgUrl,status,createdAt";
-
 function normalizeStatus(value: unknown): Product["status"] {
   const status = String(value ?? "available");
   if (status === "reserved") return "reserved";
@@ -39,23 +36,33 @@ function mapSupabaseProduct(record: Record<string, unknown>): Product {
   };
 }
 
+async function fetchProducts(path: string): Promise<Product[]> {
+  const response = await supabaseFetch<Record<string, unknown>[]>(path);
+  return response.map(mapSupabaseProduct);
+}
+
 export class SupabaseProductRepository implements ProductRepository {
   async fetchAll(shopId?: string | null): Promise<Product[]> {
-    const shopFilter = shopId
-      ? `&shop_id=eq.${encodeURIComponent(shopId)}`
-      : "";
-    const response = await supabaseFetch<Record<string, unknown>[]>(
-      `Product?select=${PRODUCT_SELECT}&order=createdAt.desc${shopFilter}`
-    );
+    const basePath = "Product?select=*&order=createdAt.desc";
 
-    return response.map(mapSupabaseProduct);
+    if (!shopId) {
+      return fetchProducts(basePath);
+    }
+
+    try {
+      return await fetchProducts(
+        `${basePath}&shopId=eq.${encodeURIComponent(shopId)}`
+      );
+    } catch {
+      return fetchProducts(
+        `${basePath}&shop_id=eq.${encodeURIComponent(shopId)}`
+      );
+    }
   }
 
   async fetchById(id: string): Promise<Product | null> {
     const response = await supabaseFetch<Record<string, unknown>[]>(
-      `Product?select=${PRODUCT_SELECT}&eq(id,${encodeURIComponent(
-        id
-      )})&limit=1`
+      `Product?select=*&eq(id,${encodeURIComponent(id)})&limit=1`
     );
 
     if (!response.length) {
