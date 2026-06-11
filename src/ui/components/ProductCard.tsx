@@ -1,108 +1,63 @@
 import type { Product } from "@/src/domain/entities/product";
 import type { ShopProfile } from "@/src/domain/entities/shopProfile";
 
-const FALLBACK_WHATSAPP = "5351694749";
-
-function normalizeWhatsAppNumber(value: string): string {
-  return value.replace(/\D/g, "");
-}
-
 export function ProductCard({
   product,
-  shop,
   showShopName = false,
+  onOpen,
+  animationDelay = 0,
 }: {
   product: Product;
   shop?: ShopProfile | null;
   showShopName?: boolean;
+  onOpen: () => void;
+  animationDelay?: number;
 }) {
-  const whatsappNumber = normalizeWhatsAppNumber(
-    shop?.whatsappNumber || FALLBACK_WHATSAPP
-  );
-  const contactMessage = encodeURIComponent(
-    `Hola, estoy interesado en el producto ${product.name}. ¿Podrían contactarme por favor?`
-  );
-  const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${contactMessage}`;
-
   return (
-    <article className="rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-[var(--shadow)] transition hover:-translate-y-1 hover:shadow-xl">
+    <button
+      type="button"
+      onClick={onOpen}
+      style={{ animationDelay: `${animationDelay}ms` }}
+      className="animate-fade-up group w-full rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-4 text-left shadow-[var(--shadow)] transition hover:-translate-y-1 hover:shadow-xl sm:p-5"
+    >
       <img
         src={product.imgUrl}
         alt={product.name}
-        className="mb-5 h-56 w-full rounded-2xl object-cover sm:h-64"
+        className="mb-4 h-44 w-full rounded-2xl object-cover sm:h-52"
       />
-      <div className="space-y-5">
-        <div className="flex flex-col gap-3 text-sm text-[var(--muted)] sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex flex-col gap-1">
-            <span className="font-medium text-[var(--foreground)]">
+      <div className="space-y-3">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0 space-y-1">
+            <p className="truncate text-xs font-medium uppercase tracking-wide text-[var(--accent)]">
               {product.categoryName ?? product.category ?? "Sin categoría"}
-            </span>
+            </p>
             {showShopName && product.shopName ? (
-              <span className="text-xs text-[var(--muted)]">
+              <p className="truncate text-xs text-[var(--muted)]">
                 {product.shopName}
-              </span>
+              </p>
             ) : null}
           </div>
-          <span
-            className={
-              product.status === "available"
-                ? "text-emerald-500"
-                : "text-rose-500"
-            }
-          >
-            {product.status === "available"
-              ? "Disponible"
-              : product.status === "reserved"
-                ? "Reservado"
-                : "Agotado"}
+          <span className="shrink-0 rounded-full bg-emerald-500/10 px-2 py-1 text-xs font-medium text-emerald-600 dark:text-emerald-400">
+            Disponible
           </span>
         </div>
-        <div className="space-y-3">
-          <h2 className="text-2xl font-semibold text-[var(--foreground)] sm:text-3xl">
-            {product.name}
-          </h2>
-          <p className="text-sm leading-6 text-[var(--muted)]">
-            {product.description ?? "Sin descripción adicional."}
-          </p>
-        </div>
-        <div className="grid gap-3 rounded-3xl bg-[var(--surface-alt)] p-4 text-sm text-[var(--foreground)] shadow-sm sm:grid-cols-2">
-          <div className="flex flex-col gap-1">
-            <span className="font-medium">Clasificación</span>
-            <span className="text-[var(--muted)]">
-              {product.classification ?? "No aplica"}
-            </span>
-          </div>
-          <div className="flex flex-col gap-1">
-            <span className="font-medium">Precio</span>
-            <span className="text-[var(--muted)]">
-              {product.price != null
-                ? `${product.currency ?? "USD"} ${product.price.toFixed(2)}`
-                : "Consultar"}
-            </span>
-          </div>
-          <div className="flex flex-col gap-1 sm:col-span-2">
-            <span className="font-medium">Publicado</span>
-            <span className="text-[var(--muted)]">
-              {new Date(product.createdAt).toLocaleDateString()}
-            </span>
-          </div>
-        </div>
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <a
-            href={whatsappUrl}
-            target="_blank"
-            rel="noreferrer"
-            className="inline-flex min-h-[44px] w-full items-center justify-center rounded-full bg-[var(--accent)] px-5 py-3 text-center text-sm font-semibold text-white transition hover:bg-[var(--accent-dark)] sm:w-auto"
-          >
-            Estoy interesado
-          </a>
-          <span className="text-sm leading-6 text-[var(--muted)]">
-            {shop?.shopName
-              ? `Contacta a ${shop.shopName} para comprar o reservar.`
-              : "Contacta al vendedor para comprar o reservar este producto."}
+        <h2 className="line-clamp-2 text-lg font-semibold text-[var(--foreground)] sm:text-xl">
+          {product.name}
+        </h2>
+        <p className="line-clamp-2 text-sm leading-6 text-[var(--muted)]">
+          {product.description ?? "Toca para ver detalles y contactar."}
+        </p>
+        <div className="flex items-center justify-between pt-1 text-sm">
+          <span className="font-medium text-[var(--foreground)]">
+            {product.price != null
+              ? `${product.currency ?? "USD"} ${product.price.toFixed(2)}`
+              : "Consultar precio"}
+          </span>
+          <span className="text-[var(--accent)] transition group-hover:translate-x-0.5">
+            Ver más →
           </span>
         </div>
       </div>
-    </article>
+    </button>
   );
 }

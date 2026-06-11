@@ -8,6 +8,9 @@ import { SupabaseProductRepository } from "@/src/infra/repositories/supabaseProd
 import { SupabaseCategoryRepository } from "@/src/infra/repositories/supabaseCategoryRepository";
 import { SupabaseShopProfileRepository } from "@/src/infra/repositories/supabaseShopProfileRepository";
 
+export const dynamic = "force-dynamic";
+export const fetchCache = "force-no-store";
+
 export default async function Home({
   searchParams,
 }: {

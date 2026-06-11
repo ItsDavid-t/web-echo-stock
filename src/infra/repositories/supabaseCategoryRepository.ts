@@ -17,27 +17,49 @@ function mapSupabaseCategory(record: Record<string, unknown>): Category {
   };
 }
 
-async function fetchCategories(path: string): Promise<Category[]> {
-  const response = await supabaseFetch<Record<string, unknown>[]>(path);
-  return response.map(mapSupabaseCategory);
+const CATEGORY_QUERY_PATHS = [
+  "Category?select=*&order=name",
+  "Category?select=*",
+];
+
+async function fetchCategoriesFromPaths(
+  paths: string[]
+): Promise<Category[]> {
+  let lastError: Error | null = null;
+
+  for (const path of paths) {
+    try {
+      const response = await supabaseFetch<Record<string, unknown>[]>(path);
+      if (!Array.isArray(response)) {
+        continue;
+      }
+      return response.map(mapSupabaseCategory);
+    } catch (error) {
+      lastError =
+        error instanceof Error ? error : new Error("Error desconocido en Supabase");
+    }
+  }
+
+  throw lastError ?? new Error("No se pudieron cargar las categorías");
 }
 
 export class SupabaseCategoryRepository implements CategoryRepository {
   async fetchAll(shopId?: string | null): Promise<Category[]> {
-    const basePath = "Category?select=*&order=name";
-
     if (!shopId) {
-      return fetchCategories(basePath);
+      return fetchCategoriesFromPaths(CATEGORY_QUERY_PATHS);
     }
 
-    try {
-      return await fetchCategories(
-        `${basePath}&shopId=eq.${encodeURIComponent(shopId)}`
-      );
-    } catch {
-      return fetchCategories(
-        `${basePath}&shop_id=eq.${encodeURIComponent(shopId)}`
-      );
-    }
+    const shopPaths = [
+      ...CATEGORY_QUERY_PATHS.map(
+        (path) =>
+          `${path}${path.includes("?") ? "&" : "?"}shopId=eq.${encodeURIComponent(shopId)}`
+      ),
+      ...CATEGORY_QUERY_PATHS.map(
+        (path) =>
+          `${path}${path.includes("?") ? "&" : "?"}shop_id=eq.${encodeURIComponent(shopId)}`
+      ),
+    ];
+
+    return fetchCategoriesFromPaths(shopPaths);
   }
 }
