@@ -3,22 +3,22 @@
 import { useMemo, useState } from "react";
 import type { Category } from "@/src/domain/entities/category";
 import type { Product } from "@/src/domain/entities/product";
+import type { ShopProfile } from "@/src/domain/entities/shopProfile";
 import { ProductCatalogGrid } from "@/src/ui/components/ProductCatalogGrid";
+import { ShopSelector } from "@/src/ui/components/ShopSelector";
 import { ThemeToggle } from "@/src/ui/components/ThemeToggle";
 import Image from "next/image";
-
-const formatStatusLabel = (status: Product["status"]) => {
-  if (status === "reserved") return "Reservado";
-  if (status === "outOfStock") return "Agotado";
-  return "Disponible";
-};
 
 export function ProductCatalogPage({
   products,
   categories,
+  shops,
+  lockedShopId,
 }: {
   products: Product[];
   categories: Category[];
+  shops: ShopProfile[];
+  lockedShopId: string | null;
 }) {
   const [search, setSearch] = useState("");
   const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(
@@ -27,29 +27,78 @@ export function ProductCatalogPage({
   const [selectedClassification, setSelectedClassification] = useState<string>(
     ""
   );
-
-  const categoriesById = useMemo(
-    () => new Map(categories.map((category) => [category.id, category])),
-    [categories]
+  const [selectedShopId, setSelectedShopId] = useState<string | null>(
+    lockedShopId
   );
 
-  // Función para encontrar la categoría raíz (sin parentId) de una categoría
-  const getRootCategory = useMemo(
-    () => (categoryId: number): Category | null => {
-      let currentCategory = categoriesById.get(categoryId);
-      
-      while (currentCategory && currentCategory.parentId != null) {
-        currentCategory = categoriesById.get(currentCategory.parentId);
+  const activeShopId = lockedShopId ?? selectedShopId;
+
+  const resolvedShops = useMemo(() => {
+    const shopMap = new Map(shops.map((shop) => [shop.id, shop]));
+
+    for (const product of products) {
+      if (product.shopId && !shopMap.has(product.shopId)) {
+        shopMap.set(product.shopId, {
+          id: product.shopId,
+          shopName: `Tienda ${product.shopId.slice(0, 8)}`,
+          whatsappNumber: "",
+          createdAt: new Date().toISOString(),
+        });
       }
-      
-      return currentCategory || null;
-    },
+    }
+
+    return Array.from(shopMap.values()).sort((a, b) =>
+      a.shopName.localeCompare(b.shopName)
+    );
+  }, [shops, products]);
+
+  const shopsById = useMemo(
+    () => new Map(resolvedShops.map((shop) => [shop.id, shop])),
+    [resolvedShops]
+  );
+
+  const activeShop = activeShopId ? shopsById.get(activeShopId) : null;
+
+  const shopScopedProducts = useMemo(() => {
+    if (!activeShopId) {
+      return products;
+    }
+
+    return products.filter((product) => product.shopId === activeShopId);
+  }, [products, activeShopId]);
+
+  const shopScopedCategories = useMemo(() => {
+    if (!activeShopId) {
+      return categories;
+    }
+
+    return categories.filter((category) => category.shopId === activeShopId);
+  }, [categories, activeShopId]);
+
+  const categoriesById = useMemo(
+    () =>
+      new Map(shopScopedCategories.map((category) => [category.id, category])),
+    [shopScopedCategories]
+  );
+
+  const getRootCategory = useMemo(
+    () =>
+      (categoryId: number): Category | null => {
+        let currentCategory = categoriesById.get(categoryId);
+
+        while (currentCategory && currentCategory.parentId != null) {
+          currentCategory = categoriesById.get(currentCategory.parentId);
+        }
+
+        return currentCategory || null;
+      },
     [categoriesById]
   );
 
   const rootCategories = useMemo(
-    () => categories.filter((category) => category.parentId == null),
-    [categories]
+    () =>
+      shopScopedCategories.filter((category) => category.parentId == null),
+    [shopScopedCategories]
   );
 
   const categoryIdsToFilter = useMemo(() => {
@@ -64,40 +113,45 @@ export function ProductCatalogPage({
     () =>
       Array.from(
         new Set(
-          products
+          shopScopedProducts
             .map((product) => product.classification?.trim() ?? "")
             .filter((value) => value.length > 0)
         )
       ),
-    [products]
+    [shopScopedProducts]
   );
 
-  const productsWithCategoryName = useMemo(
+  const productsWithMetadata = useMemo(
     () =>
-      products.map((product) => {
-        let categoryName: string = product.categoryName || product.category || "";
+      shopScopedProducts.map((product) => {
+        let categoryName: string =
+          product.categoryName || product.category || "";
 
-        // Si hay categoryId, obtener el nombre de la categoría raíz
         if (!categoryName && product.categoryId != null) {
           const rootCategory = getRootCategory(product.categoryId);
           categoryName = rootCategory?.name || "";
         }
 
-        // Fallback: Sin categoría
         if (!categoryName) {
           categoryName = "Sin categoría";
         }
 
+        const shopName =
+          product.shopId != null
+            ? shopsById.get(product.shopId)?.shopName ?? null
+            : null;
+
         return {
           ...product,
           categoryName,
+          shopName,
         };
       }),
-    [products, getRootCategory]
+    [shopScopedProducts, getRootCategory, shopsById]
   );
 
   const filteredProducts = useMemo(() => {
-    return productsWithCategoryName.filter((product) => {
+    return productsWithMetadata.filter((product) => {
       if (categoryIdsToFilter && product.categoryId != null) {
         const rootCategory = getRootCategory(product.categoryId);
         if (!categoryIdsToFilter.includes(rootCategory?.id ?? -1)) {
@@ -116,33 +170,72 @@ export function ProductCatalogPage({
       const normalizedSearch = search.toLowerCase();
       return (
         product.name.toLowerCase().includes(normalizedSearch) ||
-        String(product.description ?? "").toLowerCase().includes(normalizedSearch) ||
-        String(product.categoryName ?? "").toLowerCase().includes(normalizedSearch) ||
-        String(product.classification ?? "").toLowerCase().includes(normalizedSearch)
+        String(product.description ?? "")
+          .toLowerCase()
+          .includes(normalizedSearch) ||
+        String(product.categoryName ?? "")
+          .toLowerCase()
+          .includes(normalizedSearch) ||
+        String(product.classification ?? "")
+          .toLowerCase()
+          .includes(normalizedSearch) ||
+        String(product.shopName ?? "")
+          .toLowerCase()
+          .includes(normalizedSearch)
       );
     });
-  }, [search, selectedCategoryId, selectedClassification, productsWithCategoryName, categoryIdsToFilter, getRootCategory]);
+  }, [
+    search,
+    selectedClassification,
+    productsWithMetadata,
+    categoryIdsToFilter,
+    getRootCategory,
+  ]);
+
+  const pageTitle = activeShop?.shopName ?? "Catálogo de productos";
+  const pageDescription =
+    activeShop?.description ??
+    (activeShopId
+      ? "Explora los productos disponibles en esta tienda."
+      : "Explora productos de todas las tiendas conectadas.");
+
+  const handleShopSelect = (shopId: string | null) => {
+    setSelectedShopId(shopId);
+    setSelectedCategoryId(null);
+    setSelectedClassification("");
+  };
 
   return (
     <main className="mx-auto w-full max-w-7xl px-6 py-10 sm:px-8 lg:px-10">
       <header className="mb-10">
         <div className="flex flex-col gap-6 rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-[var(--shadow)] sm:flex-row sm:items-center sm:justify-between">
           <div className="flex flex-1 flex-col gap-4 sm:flex-row sm:items-center">
-            <Image
-              src="/app_icon.png"
-              alt="Echo Stock"
-              width={48}
-              height={48}
-              className="rounded-xl"
-            />
+            {activeShop?.logoUrl ? (
+              <img
+                src={activeShop.logoUrl}
+                alt={activeShop.shopName}
+                className="h-12 w-12 rounded-xl object-cover"
+              />
+            ) : (
+              <Image
+                src="/app_icon.png"
+                alt="Echo Stock"
+                width={48}
+                height={48}
+                className="rounded-xl"
+              />
+            )}
             <div className="space-y-2">
               <div className="inline-flex items-center rounded-full bg-[var(--accent-soft)] px-4 py-2 text-sm font-medium text-[var(--accent)]">
-                Echo Stock
+                {activeShop ? activeShop.shopName : "Echo Stock"}
               </div>
               <div>
                 <h1 className="text-3xl font-semibold tracking-tight text-[var(--foreground)] sm:text-4xl">
-                  Catálogo de productos
+                  {pageTitle}
                 </h1>
+                <p className="mt-2 max-w-2xl text-sm leading-6 text-[var(--muted)]">
+                  {pageDescription}
+                </p>
               </div>
             </div>
           </div>
@@ -160,18 +253,29 @@ export function ProductCatalogPage({
             type="search"
             value={search}
             onChange={(event) => setSearch(event.target.value)}
-            placeholder="Buscar por nombre, categoría o clasificación"
+            placeholder="Buscar por nombre, categoría, tienda o clasificación"
             className="w-full rounded-3xl border border-[var(--border)] bg-[var(--surface)] px-4 py-3 text-sm text-[var(--foreground)] outline-none transition focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent-soft)]"
           />
           <div className="rounded-3xl bg-[var(--surface)] p-4 text-sm text-[var(--muted)] shadow-[var(--shadow)] sm:text-right">
-            <p className="font-medium text-[var(--foreground)]">{filteredProducts.length}</p>
+            <p className="font-medium text-[var(--foreground)]">
+              {filteredProducts.length}
+            </p>
             <p>productos encontrados</p>
           </div>
         </div>
 
         <div className="space-y-4 rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-[var(--shadow)]">
+          <ShopSelector
+            shops={resolvedShops}
+            selectedShopId={activeShopId}
+            onSelect={handleShopSelect}
+            lockedShopId={lockedShopId}
+          />
+
           <div className="space-y-3">
-            <p className="text-sm uppercase tracking-[0.24em] text-[var(--muted)]">Categorías</p>
+            <p className="text-sm uppercase tracking-[0.24em] text-[var(--muted)]">
+              Categorías
+            </p>
             <div className="flex flex-wrap gap-2">
               <button
                 type="button"
@@ -242,7 +346,11 @@ export function ProductCatalogPage({
       </section>
 
       {filteredProducts.length > 0 ? (
-        <ProductCatalogGrid products={filteredProducts} />
+        <ProductCatalogGrid
+          products={filteredProducts}
+          shopsById={shopsById}
+          showShopName={!activeShopId}
+        />
       ) : (
         <div className="rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-10 text-center text-sm text-[var(--muted)] shadow-[var(--shadow)]">
           No se encontraron productos para los filtros seleccionados.

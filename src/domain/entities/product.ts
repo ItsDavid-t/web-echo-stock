@@ -8,6 +8,8 @@ export type Product = {
   categoryId?: number | null;
   category?: string;
   categoryName?: string | null;
+  shopId?: string | null;
+  shopName?: string | null;
   imgUrl: string;
   status: ProductStatus;
   createdAt: string;

@@ -1,12 +1,28 @@
 import type { Product } from "@/src/domain/entities/product";
+import type { ShopProfile } from "@/src/domain/entities/shopProfile";
 
-const ADMIN_WHATSAPP = "+5351694749"; 
+const FALLBACK_WHATSAPP = "5351694749";
 
-export function ProductCard({ product }: { product: Product }) {
+function normalizeWhatsAppNumber(value: string): string {
+  return value.replace(/\D/g, "");
+}
+
+export function ProductCard({
+  product,
+  shop,
+  showShopName = false,
+}: {
+  product: Product;
+  shop?: ShopProfile | null;
+  showShopName?: boolean;
+}) {
+  const whatsappNumber = normalizeWhatsAppNumber(
+    shop?.whatsappNumber || FALLBACK_WHATSAPP
+  );
   const contactMessage = encodeURIComponent(
     `Hola, estoy interesado en el producto ${product.name}. ¿Podrían contactarme por favor?`
   );
-  const whatsappUrl = `https://wa.me/${ADMIN_WHATSAPP}?text=${contactMessage}`;
+  const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${contactMessage}`;
 
   return (
     <article className="rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-[var(--shadow)] transition hover:-translate-y-1 hover:shadow-xl">
@@ -17,7 +33,16 @@ export function ProductCard({ product }: { product: Product }) {
       />
       <div className="space-y-5">
         <div className="flex flex-col gap-3 text-sm text-[var(--muted)] sm:flex-row sm:items-center sm:justify-between">
-          <span className="font-medium text-[var(--foreground)]">{product.categoryName ?? product.category ?? "Sin categoría"}</span>
+          <div className="flex flex-col gap-1">
+            <span className="font-medium text-[var(--foreground)]">
+              {product.categoryName ?? product.category ?? "Sin categoría"}
+            </span>
+            {showShopName && product.shopName ? (
+              <span className="text-xs text-[var(--muted)]">
+                {product.shopName}
+              </span>
+            ) : null}
+          </div>
           <span
             className={
               product.status === "available"
@@ -28,12 +53,14 @@ export function ProductCard({ product }: { product: Product }) {
             {product.status === "available"
               ? "Disponible"
               : product.status === "reserved"
-              ? "Reservado"
-              : "Agotado"}
+                ? "Reservado"
+                : "Agotado"}
           </span>
         </div>
         <div className="space-y-3">
-          <h2 className="text-2xl font-semibold text-[var(--foreground)] sm:text-3xl">{product.name}</h2>
+          <h2 className="text-2xl font-semibold text-[var(--foreground)] sm:text-3xl">
+            {product.name}
+          </h2>
           <p className="text-sm leading-6 text-[var(--muted)]">
             {product.description ?? "Sin descripción adicional."}
           </p>
@@ -41,15 +68,23 @@ export function ProductCard({ product }: { product: Product }) {
         <div className="grid gap-3 rounded-3xl bg-[var(--surface-alt)] p-4 text-sm text-[var(--foreground)] shadow-sm sm:grid-cols-2">
           <div className="flex flex-col gap-1">
             <span className="font-medium">Clasificación</span>
-            <span className="text-[var(--muted)]">{product.classification ?? "No aplica"}</span>
+            <span className="text-[var(--muted)]">
+              {product.classification ?? "No aplica"}
+            </span>
           </div>
           <div className="flex flex-col gap-1">
             <span className="font-medium">Precio</span>
-            <span className="text-[var(--muted)]">{product.price != null ? `${product.currency ?? "USD"} ${product.price.toFixed(2)}` : "Consultar"}</span>
+            <span className="text-[var(--muted)]">
+              {product.price != null
+                ? `${product.currency ?? "USD"} ${product.price.toFixed(2)}`
+                : "Consultar"}
+            </span>
           </div>
           <div className="flex flex-col gap-1 sm:col-span-2">
             <span className="font-medium">Publicado</span>
-            <span className="text-[var(--muted)]">{new Date(product.createdAt).toLocaleDateString()}</span>
+            <span className="text-[var(--muted)]">
+              {new Date(product.createdAt).toLocaleDateString()}
+            </span>
           </div>
         </div>
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -62,7 +97,9 @@ export function ProductCard({ product }: { product: Product }) {
             Estoy interesado
           </a>
           <span className="text-sm leading-6 text-[var(--muted)]">
-            Contacta al admin para comprar o reservar este producto.
+            {shop?.shopName
+              ? `Contacta a ${shop.shopName} para comprar o reservar.`
+              : "Contacta al vendedor para comprar o reservar este producto."}
           </span>
         </div>
       </div>

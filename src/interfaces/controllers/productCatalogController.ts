@@ -4,7 +4,7 @@ import { LoadProductCatalogUseCase } from "@/src/usecases/loadProductCatalogUseC
 export class ProductCatalogController {
   constructor(private readonly loadProductCatalogUseCase: LoadProductCatalogUseCase) {}
 
-  async getCatalog(): Promise<Product[]> {
-    return this.loadProductCatalogUseCase.execute();
+  async getCatalog(shopId?: string | null): Promise<Product[]> {
+    return this.loadProductCatalogUseCase.execute(shopId);
   }
 }

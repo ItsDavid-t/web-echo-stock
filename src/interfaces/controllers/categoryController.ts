@@ -4,7 +4,7 @@ import type { CategoryRepository } from "@/src/domain/repositories/categoryRepos
 export class CategoryController {
   constructor(private readonly categoryRepository: CategoryRepository) {}
 
-  async getAllCategories(): Promise<Category[]> {
-    return this.categoryRepository.fetchAll();
+  async getAllCategories(shopId?: string | null): Promise<Category[]> {
+    return this.categoryRepository.fetchAll(shopId);
   }
 }
