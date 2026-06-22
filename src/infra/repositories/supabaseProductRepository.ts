@@ -39,7 +39,7 @@ function resolveSellPrice(record: Record<string, unknown>): number | undefined {
   if (raw == null) return undefined;
 
   const price = Number(raw);
-  if (!Number.isFinite(price) || price <= 0) return undefined;
+ //if (!Number.isFinite(price) || price <= 0) return undefined; 
 
   return price;
 }
