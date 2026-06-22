@@ -14,6 +14,7 @@ const PUBLIC_PRODUCT_COLUMNS = [
   "status",
   "createdAt",
   "sell_price",
+  "stock"
 ].join(",");
 
 function normalizeStatus(value: unknown): Product["status"] {
@@ -82,9 +83,9 @@ function mapSupabaseProduct(record: Record<string, unknown>): Product | null {
 }
 
 const PRODUCT_QUERY_PATHS = [
-  `Product?select=${PUBLIC_PRODUCT_COLUMNS}&status=eq.available&stock=gt.0&order=createdAt.desc`,
+  `Product?select=${PUBLIC_PRODUCT_COLUMNS}&status=eq.available&stock=gt.0&order="createdAt".desc`,
   `Product?select=${PUBLIC_PRODUCT_COLUMNS}&status=eq.available&stock=gt.0`,
-  `Product?select=${PUBLIC_PRODUCT_COLUMNS}&order=createdAt.desc`,
+  `Product?select=${PUBLIC_PRODUCT_COLUMNS}&order="createdAt".desc`,
   `Product?select=${PUBLIC_PRODUCT_COLUMNS}`,
 ];
 
