@@ -39,7 +39,9 @@ function resolveSellPrice(record: Record<string, unknown>): number | undefined {
   if (raw == null) return undefined;
 
   const price = Number(raw);
- //if (!Number.isFinite(price) || price <= 0) return undefined; 
+ if (!Number.isFinite(price) || price <= 0) return undefined; 
+
+ console.log("Preciooooooo:", price);
 
   return price;
 }
@@ -59,7 +61,9 @@ function mapSupabaseProduct(record: Record<string, unknown>): Product | null {
   if (!isPubliclyVisible(record)) {
     return null;
   }
-
+  
+  
+console.log("Registro crudo de Supabase:", record);
   return {
     id: String(record["id"] ?? ""),
     name: String(record["name"] ?? ""),

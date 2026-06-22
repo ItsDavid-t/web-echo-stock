@@ -47,10 +47,11 @@ export class ProductCatalogService {
           ? shopsById.get(product.shopId)?.shopName ?? null
           : null;
 
+
       return {
         ...product,
         categoryName: categoryName || "Sin categoría",
-        shopName,
+        shopName,price: product.price ?? undefined,
       };
     });
   }
