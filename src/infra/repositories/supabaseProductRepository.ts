@@ -2,7 +2,7 @@ import type { Product } from "@/src/domain/entities/product";
 import type { ProductRepository } from "@/src/domain/repositories/productRepository";
 import { supabaseFetch } from "@/src/infra/supabase/supabaseClient";
 
-/** Columnas visibles al público — sin cost_price, stock ni lowStockAlert. */
+
 const PUBLIC_PRODUCT_COLUMNS = [
   "id",
   "name",
@@ -15,7 +15,6 @@ const PUBLIC_PRODUCT_COLUMNS = [
   "createdAt",
   "created_at",
   "sell_price",
-  "sellPrice",
 ].join(",");
 
 function normalizeStatus(value: unknown): Product["status"] {
@@ -36,7 +35,7 @@ function resolveCreatedAt(record: Record<string, unknown>): string {
 }
 
 function resolveSellPrice(record: Record<string, unknown>): number | undefined {
-  const raw = record["sell_price"] ?? record["sellPrice"];
+  const raw = record["sell_price"];
   if (raw == null) return undefined;
 
   const price = Number(raw);

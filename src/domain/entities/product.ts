@@ -1,6 +1,6 @@
 export type ProductStatus = "available" | "reserved" | "outOfStock";
 
-/** Producto público del catálogo (solo campos visibles al cliente). */
+
 export type Product = {
   id: string;
   name: string;
@@ -14,6 +14,5 @@ export type Product = {
   imgUrl: string;
   status: ProductStatus;
   createdAt: string;
-  /** Precio de venta al público (sell_price en Supabase). */
   price?: number;
 };
