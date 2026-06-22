@@ -2,6 +2,22 @@ import type { Product } from "@/src/domain/entities/product";
 import type { ProductRepository } from "@/src/domain/repositories/productRepository";
 import { supabaseFetch } from "@/src/infra/supabase/supabaseClient";
 
+/** Columnas visibles al público — sin cost_price, stock ni lowStockAlert. */
+const PUBLIC_PRODUCT_COLUMNS = [
+  "id",
+  "name",
+  "description",
+  "classification",
+  "categoryId",
+  "shop_id",
+  "imgUrl",
+  "status",
+  "createdAt",
+  "created_at",
+  "sell_price",
+  "sellPrice",
+].join(",");
+
 function normalizeStatus(value: unknown): Product["status"] {
   const status = String(value ?? "available").trim();
   if (status === "reserved") return "reserved";
@@ -19,7 +35,32 @@ function resolveCreatedAt(record: Record<string, unknown>): string {
   return value == null ? new Date().toISOString() : String(value);
 }
 
-function mapSupabaseProduct(record: Record<string, unknown>): Product {
+function resolveSellPrice(record: Record<string, unknown>): number | undefined {
+  const raw = record["sell_price"] ?? record["sellPrice"];
+  if (raw == null) return undefined;
+
+  const price = Number(raw);
+  if (!Number.isFinite(price) || price <= 0) return undefined;
+
+  return price;
+}
+
+function isPubliclyVisible(record: Record<string, unknown>): boolean {
+  const status = normalizeStatus(record["status"]);
+  if (status !== "available") return false;
+
+  if (record["stock"] == null) {
+    return true;
+  }
+
+  return Number(record["stock"]) > 0;
+}
+
+function mapSupabaseProduct(record: Record<string, unknown>): Product | null {
+  if (!isPubliclyVisible(record)) {
+    return null;
+  }
+
   return {
     id: String(record["id"] ?? ""),
     name: String(record["name"] ?? ""),
@@ -38,13 +79,17 @@ function mapSupabaseProduct(record: Record<string, unknown>): Product {
       "https://via.placeholder.com/320x240?text=Sin+imagen",
     status: normalizeStatus(record["status"]),
     createdAt: resolveCreatedAt(record),
+    price: resolveSellPrice(record),
   };
 }
 
 const PRODUCT_QUERY_PATHS = [
-  "Product?select=*&order=createdAt.desc",
-  "Product?select=*&order=created_at.desc",
-  "Product?select=*",
+  `Product?select=${PUBLIC_PRODUCT_COLUMNS}&status=eq.available&stock=gt.0&order=createdAt.desc`,
+  `Product?select=${PUBLIC_PRODUCT_COLUMNS}&status=eq.available&stock=gt.0&order=created_at.desc`,
+  `Product?select=${PUBLIC_PRODUCT_COLUMNS}&status=eq.available&stock=gt.0`,
+  `Product?select=${PUBLIC_PRODUCT_COLUMNS}&order=createdAt.desc`,
+  `Product?select=${PUBLIC_PRODUCT_COLUMNS}&order=created_at.desc`,
+  `Product?select=${PUBLIC_PRODUCT_COLUMNS}`,
 ];
 
 async function fetchProductsFromPaths(
@@ -58,7 +103,10 @@ async function fetchProductsFromPaths(
       if (!Array.isArray(response)) {
         continue;
       }
-      return response.map(mapSupabaseProduct);
+
+      return response
+        .map(mapSupabaseProduct)
+        .filter((product): product is Product => product != null);
     } catch (error) {
       lastError =
         error instanceof Error ? error : new Error("Error desconocido en Supabase");
@@ -70,7 +118,7 @@ async function fetchProductsFromPaths(
 
 function withShopFilter(path: string, shopId: string): string {
   const separator = path.includes("?") ? "&" : "?";
-  return `${path}${separator}shopId=eq.${encodeURIComponent(shopId)}`;
+  return `${path}${separator}shop_id=eq.${encodeURIComponent(shopId)}`;
 }
 
 export class SupabaseProductRepository implements ProductRepository {
@@ -82,7 +130,7 @@ export class SupabaseProductRepository implements ProductRepository {
     const shopPaths = [
       ...PRODUCT_QUERY_PATHS.map((path) => withShopFilter(path, shopId)),
       ...PRODUCT_QUERY_PATHS.map((path) =>
-        `${path}${path.includes("?") ? "&" : "?"}shop_id=eq.${encodeURIComponent(shopId)}`
+        `${path}${path.includes("?") ? "&" : "?"}shopId=eq.${encodeURIComponent(shopId)}`
       ),
     ];
 
@@ -91,7 +139,7 @@ export class SupabaseProductRepository implements ProductRepository {
 
   async fetchById(id: string): Promise<Product | null> {
     const response = await supabaseFetch<Record<string, unknown>[]>(
-      `Product?select=*&eq(id,${encodeURIComponent(id)})&limit=1`
+      `Product?select=${PUBLIC_PRODUCT_COLUMNS}&id=eq.${encodeURIComponent(id)}&limit=1`
     );
 
     if (!response.length) {

@@ -1,6 +1,7 @@
 import type { Product } from "@/src/domain/entities/product";
 import type { ShopProfile } from "@/src/domain/entities/shopProfile";
 import type { WhatsAppContact } from "@/src/domain/types/catalog";
+import { formatPublicPrice, hasPublicPrice } from "@/src/domain/services/formatPublicPrice";
 
 const FALLBACK_WHATSAPP = "5351694749";
 
@@ -10,7 +11,10 @@ export class WhatsAppContactService {
       /\D/g,
       ""
     );
-    const message = `Hola, estoy interesado en el producto ${product.name}. ¿Podrían contactarme por favor?`;
+    const priceText = hasPublicPrice(product.price)
+      ? ` (${formatPublicPrice(product.price)})`
+      : "";
+    const message = `Hola, estoy interesado en el producto ${product.name}${priceText}. ¿Podrían contactarme por favor?`;
 
     return {
       phoneNumber,

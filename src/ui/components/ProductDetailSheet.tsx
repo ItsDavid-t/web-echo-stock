@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import type { Product } from "@/src/domain/entities/product";
 import type { ShopProfile } from "@/src/domain/entities/shopProfile";
+import { formatPublicPrice } from "@/src/domain/services/formatPublicPrice";
 import { WhatsAppContactService } from "@/src/domain/services/whatsappContactService";
 
 export function ProductDetailSheet({
@@ -94,10 +95,8 @@ export function ProductDetailSheet({
             </div>
             <div>
               <p className="font-medium">Precio</p>
-              <p className="text-[var(--muted)]">
-                {product.price != null
-                  ? `${product.currency ?? "USD"} ${product.price.toFixed(2)}`
-                  : "Consultar"}
+              <p className="text-lg font-semibold text-[var(--foreground)]">
+                {formatPublicPrice(product.price)}
               </p>
             </div>
             <div className="col-span-2">

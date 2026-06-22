@@ -6,6 +6,7 @@ export class LoadProductCatalogUseCase {
 
   async execute(shopId?: string | null): Promise<Product[]> {
     const products = await this.repository.fetchAll(shopId);
+
     return products
       .filter((product) => product.status === "available")
       .sort(

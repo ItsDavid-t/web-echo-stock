@@ -13,7 +13,7 @@ CREATE POLICY "public_read_available_products"
   ON public."Product"
   FOR SELECT
   TO anon, authenticated
-  USING (status = 'available');
+  USING (status = 'available' AND stock > 0);
 
 DROP POLICY IF EXISTS "public_read_categories" ON public."Category";
 CREATE POLICY "public_read_categories"

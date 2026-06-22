@@ -1,4 +1,5 @@
 import type { Product } from "@/src/domain/entities/product";
+import { formatPublicPrice } from "@/src/domain/services/formatPublicPrice";
 
 export function ProductListItem({
   product,
@@ -29,6 +30,9 @@ export function ProductListItem({
         </h3>
         <p className="line-clamp-1 text-sm text-[var(--muted)]">
           {product.description ?? "Toca para ver detalles"}
+        </p>
+        <p className="text-sm font-semibold text-[var(--foreground)]">
+          {formatPublicPrice(product.price)}
         </p>
         {showShopName && product.shopName ? (
           <p className="truncate text-xs text-[var(--muted)]">{product.shopName}</p>

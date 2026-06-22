@@ -1,5 +1,6 @@
 import type { Product } from "@/src/domain/entities/product";
 import type { ShopProfile } from "@/src/domain/entities/shopProfile";
+import { formatPublicPrice } from "@/src/domain/services/formatPublicPrice";
 
 export function ProductCard({
   product,
@@ -48,10 +49,8 @@ export function ProductCard({
           {product.description ?? "Toca para ver detalles y contactar."}
         </p>
         <div className="flex items-center justify-between pt-1 text-sm">
-          <span className="font-medium text-[var(--foreground)]">
-            {product.price != null
-              ? `${product.currency ?? "USD"} ${product.price.toFixed(2)}`
-              : "Consultar precio"}
+          <span className="text-lg font-semibold text-[var(--foreground)]">
+            {formatPublicPrice(product.price)}
           </span>
           <span className="text-[var(--accent)] transition group-hover:translate-x-0.5">
             Ver más →

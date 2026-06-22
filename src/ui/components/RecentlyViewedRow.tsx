@@ -1,4 +1,5 @@
 import type { Product } from "@/src/domain/entities/product";
+import { formatPublicPrice } from "@/src/domain/services/formatPublicPrice";
 
 export function RecentlyViewedRow({
   products,
@@ -34,6 +35,9 @@ export function RecentlyViewedRow({
             />
             <p className="line-clamp-2 text-sm font-medium text-[var(--foreground)]">
               {product.name}
+            </p>
+            <p className="text-xs font-semibold text-[var(--accent)]">
+              {formatPublicPrice(product.price)}
             </p>
           </button>
         ))}
