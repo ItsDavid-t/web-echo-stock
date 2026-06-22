@@ -8,11 +8,11 @@ const PUBLIC_PRODUCT_COLUMNS = [
   "name",
   "description",
   "classification",
-  "categoryId",
+  '"categoryId"',
   "shop_id",
-  "imgUrl",
+  '"imgUrl"',
   "status",
-  "createdAt",
+  '"createdAt"',
   "sell_price",
   "stock"
 ].join(",");
