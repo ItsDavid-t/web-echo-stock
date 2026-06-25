@@ -12,7 +12,7 @@ function mapSupabaseCategory(record: Record<string, unknown>): Category {
     id: Number(record["id"] ?? 0),
     name: String(record["name"] ?? ""),
     parentId:
-      record["parentId"] == null ? null : Number(record["parentId"]),
+      record["parent_id"] == null ? null : Number(record["parent_id"]),
     shopId: resolveShopId(record),
   };
 }

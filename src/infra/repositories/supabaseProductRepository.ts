@@ -8,11 +8,11 @@ const PUBLIC_PRODUCT_COLUMNS = [
   "name",
   "description",
   "classification",
-  '"categoryId"',
+  '"category_id"',
   "shop_id",
-  '"imgUrl"',
+  '"img_url"',
   "status",
-  '"createdAt"',
+  '"created_at"',
   "sell_price",
   "stock"
 ].join(",");
@@ -25,12 +25,12 @@ function normalizeStatus(value: unknown): Product["status"] {
 }
 
 function resolveShopId(record: Record<string, unknown>): string | null {
-  const value = record["shopId"] ?? record["shop_id"];
+  const value = record["shop_id"];
   return value == null ? null : String(value);
 }
 
 function resolveCreatedAt(record: Record<string, unknown>): string {
-  const value = record["createdAt"] ?? record["created_at"];
+  const value = record["created_at"];
   return value == null ? new Date().toISOString() : String(value);
 }
 
@@ -41,7 +41,6 @@ function resolveSellPrice(record: Record<string, unknown>): number | undefined {
   const price = Number(raw);
  if (!Number.isFinite(price) || price <= 0) return undefined; 
 
- console.log("Preciooooooo:", price);
 
   return price;
 }
@@ -74,11 +73,11 @@ console.log("Registro crudo de Supabase:", record);
         ? null
         : String(record["classification"]),
     categoryId:
-      record["categoryId"] == null ? null : Number(record["categoryId"]),
+      record["category_id"] == null ? null : Number(record["category_id"]),
     shopId: resolveShopId(record),
     categoryName: null,
     imgUrl:
-      String(record["imgUrl"] ?? "") ||
+      String(record["img_url"] ?? "") ||
       "https://via.placeholder.com/320x240?text=Sin+imagen",
     status: normalizeStatus(record["status"]),
     createdAt: resolveCreatedAt(record),
@@ -87,9 +86,9 @@ console.log("Registro crudo de Supabase:", record);
 }
 
 const PRODUCT_QUERY_PATHS = [
-  `Product?select=${PUBLIC_PRODUCT_COLUMNS}&status=eq.available&stock=gt.0&order="createdAt".desc`,
+  `Product?select=${PUBLIC_PRODUCT_COLUMNS}&status=eq.available&stock=gt.0&order="created_at".desc`,
   `Product?select=${PUBLIC_PRODUCT_COLUMNS}&status=eq.available&stock=gt.0`,
-  `Product?select=${PUBLIC_PRODUCT_COLUMNS}&order="createdAt".desc`,
+  `Product?select=${PUBLIC_PRODUCT_COLUMNS}&order="created_at".desc`,
   `Product?select=${PUBLIC_PRODUCT_COLUMNS}`,
 ];
 
