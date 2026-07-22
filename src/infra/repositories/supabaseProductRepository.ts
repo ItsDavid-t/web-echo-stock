@@ -14,8 +14,37 @@ const PUBLIC_PRODUCT_COLUMNS = [
   "status",
   '"created_at"',
   "sell_price",
-  "stock"
+  "currency",
+  "stock",
 ].join(",");
+
+const PUBLIC_PRODUCT_COLUMNS_WITHOUT_CURRENCY = [
+  "id",
+  "name",
+  "description",
+  "classification",
+  '"category_id"',
+  "shop_id",
+  '"img_url"',
+  "status",
+  '"created_at"',
+  "sell_price",
+  "stock",
+].join(",");
+
+function buildProductQueryPaths(columns: string): string[] {
+  return [
+    `Product?select=${columns}&status=eq.available&stock=gt.0&order="created_at".desc`,
+    `Product?select=${columns}&status=eq.available&stock=gt.0`,
+    `Product?select=${columns}&order="created_at".desc`,
+    `Product?select=${columns}`,
+  ];
+}
+
+const PRODUCT_QUERY_PATHS = [
+  ...buildProductQueryPaths(PUBLIC_PRODUCT_COLUMNS),
+  ...buildProductQueryPaths(PUBLIC_PRODUCT_COLUMNS_WITHOUT_CURRENCY),
+];
 
 function normalizeStatus(value: unknown): Product["status"] {
   const status = String(value ?? "available").trim();
@@ -39,10 +68,15 @@ function resolveSellPrice(record: Record<string, unknown>): number | undefined {
   if (raw == null) return undefined;
 
   const price = Number(raw);
- if (!Number.isFinite(price) || price <= 0) return undefined; 
-
+  if (!Number.isFinite(price) || price <= 0) return undefined;
 
   return price;
+}
+
+function resolveCurrency(record: Record<string, unknown>): string {
+  const raw = record["currency"];
+  if (raw == null || String(raw).trim() === "") return "USD";
+  return String(raw).trim().toUpperCase();
 }
 
 function isPubliclyVisible(record: Record<string, unknown>): boolean {
@@ -60,9 +94,7 @@ function mapSupabaseProduct(record: Record<string, unknown>): Product | null {
   if (!isPubliclyVisible(record)) {
     return null;
   }
-  
-  
-console.log("Registro crudo de Supabase:", record);
+
   return {
     id: String(record["id"] ?? ""),
     name: String(record["name"] ?? ""),
@@ -82,15 +114,9 @@ console.log("Registro crudo de Supabase:", record);
     status: normalizeStatus(record["status"]),
     createdAt: resolveCreatedAt(record),
     price: resolveSellPrice(record),
+    currency: resolveCurrency(record),
   };
 }
-
-const PRODUCT_QUERY_PATHS = [
-  `Product?select=${PUBLIC_PRODUCT_COLUMNS}&status=eq.available&stock=gt.0&order="created_at".desc`,
-  `Product?select=${PUBLIC_PRODUCT_COLUMNS}&status=eq.available&stock=gt.0`,
-  `Product?select=${PUBLIC_PRODUCT_COLUMNS}&order="created_at".desc`,
-  `Product?select=${PUBLIC_PRODUCT_COLUMNS}`,
-];
 
 async function fetchProductsFromPaths(
   paths: string[]
@@ -130,7 +156,7 @@ export class SupabaseProductRepository implements ProductRepository {
     const shopPaths = [
       ...PRODUCT_QUERY_PATHS.map((path) => withShopFilter(path, shopId)),
       ...PRODUCT_QUERY_PATHS.map((path) =>
-        `${path}${path.includes("?") ? "&" : "?"}shopId=eq.${encodeURIComponent(shopId)}`
+        `${path}${path.includes("?") ? "&" : "?"}shop_id=eq.${encodeURIComponent(shopId)}`
       ),
     ];
 
@@ -138,14 +164,23 @@ export class SupabaseProductRepository implements ProductRepository {
   }
 
   async fetchById(id: string): Promise<Product | null> {
-    const response = await supabaseFetch<Record<string, unknown>[]>(
-      `Product?select=${PUBLIC_PRODUCT_COLUMNS}&id=eq.${encodeURIComponent(id)}&limit=1`
-    );
+    const paths = [
+      `Product?select=${PUBLIC_PRODUCT_COLUMNS}&id=eq.${encodeURIComponent(id)}&limit=1`,
+      `Product?select=${PUBLIC_PRODUCT_COLUMNS_WITHOUT_CURRENCY}&id=eq.${encodeURIComponent(id)}&limit=1`,
+    ];
 
-    if (!response.length) {
-      return null;
+    for (const path of paths) {
+      try {
+        const response = await supabaseFetch<Record<string, unknown>[]>(path);
+        if (!response.length) {
+          return null;
+        }
+        return mapSupabaseProduct(response[0]);
+      } catch {
+        // Intenta el siguiente select (p. ej. si falta la columna currency).
+      }
     }
 
-    return mapSupabaseProduct(response[0]);
+    return null;
   }
 }

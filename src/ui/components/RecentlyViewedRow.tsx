@@ -37,7 +37,7 @@ export function RecentlyViewedRow({
               {product.name}
             </p>
             <p className="text-xs font-semibold text-[var(--accent)]">
-              {formatPublicPrice(product.price)}
+              {formatPublicPrice(product.price, product.currency)}
             </p>
           </button>
         ))}

@@ -51,7 +51,9 @@ export class ProductCatalogService {
       return {
         ...product,
         categoryName: categoryName || "Sin categoría",
-        shopName,price: product.price ?? undefined,
+        shopName,
+        price: product.price ?? undefined,
+        currency: product.currency ?? "USD",
       };
     });
   }

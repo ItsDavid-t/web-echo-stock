@@ -32,7 +32,7 @@ export function ProductListItem({
           {product.description ?? "Toca para ver detalles"}
         </p>
         <p className="text-sm font-semibold text-[var(--foreground)]">
-          {formatPublicPrice(product.price)}
+          {formatPublicPrice(product.price, product.currency)}
         </p>
         {showShopName && product.shopName ? (
           <p className="truncate text-xs text-[var(--muted)]">{product.shopName}</p>

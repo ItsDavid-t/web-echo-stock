@@ -96,7 +96,7 @@ export function ProductDetailSheet({
             <div>
               <p className="font-medium">Precio</p>
               <p className="text-lg font-semibold text-[var(--foreground)]">
-                {formatPublicPrice(product.price)}
+                {formatPublicPrice(product.price, product.currency)}
               </p>
             </div>
             <div className="col-span-2">

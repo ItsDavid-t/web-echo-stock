@@ -12,7 +12,7 @@ export class WhatsAppContactService {
       ""
     );
     const priceText = hasPublicPrice(product.price)
-      ? ` (${formatPublicPrice(product.price)})`
+      ? ` (${formatPublicPrice(product.price, product.currency)})`
       : "";
     const message = `Hola, estoy interesado en el producto ${product.name}${priceText}. ¿Podrían contactarme por favor?`;
 

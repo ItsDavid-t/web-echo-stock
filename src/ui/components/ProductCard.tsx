@@ -50,7 +50,7 @@ export function ProductCard({
         </p>
         <div className="flex items-center justify-between pt-1 text-sm">
           <span className="text-lg font-semibold text-[var(--foreground)]">
-            {formatPublicPrice(product.price)}
+            {formatPublicPrice(product.price, product.currency)}
           </span>
           <span className="text-[var(--accent)] transition group-hover:translate-x-0.5">
             Ver más →
