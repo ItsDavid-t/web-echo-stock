@@ -34,11 +34,9 @@ export function ProductListItem({
         <p className="text-sm font-semibold text-[var(--foreground)]">
           {formatPublicPrice(product.price, product.currency)}
         </p>
-        {showShopName ? (
-          <p className="truncate text-xs text-[var(--muted)]">
-            {product.categoryName ?? "Sin categoría"}
-          </p>
-        ) : null}
+        <p className="line-clamp-1 text-sm text-[var(--muted)]">
+          {product.description ?? "Toca para ver detalles"}
+        </p>
       </div>
       <span className="shrink-0 text-xl text-[var(--muted)] transition group-hover:translate-x-0.5 group-hover:text-[var(--accent)]">
         →
