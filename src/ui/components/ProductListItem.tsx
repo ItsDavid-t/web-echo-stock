@@ -23,19 +23,21 @@ export function ProductListItem({
       />
       <div className="min-w-0 flex-1 space-y-1">
         <p className="truncate text-xs font-medium uppercase tracking-wide text-[var(--accent)]">
-          {product.categoryName ?? "Sin categoría"}
+          {product.shopName ?? "Sin tienda"}
         </p>
         <h3 className="truncate text-base font-semibold text-[var(--foreground)]">
           {product.name}
         </h3>
         <p className="line-clamp-1 text-sm text-[var(--muted)]">
-          {product.description ?? "Toca para ver detalles"}
+          {product.categoryName ?? "Sin categoría"}
         </p>
         <p className="text-sm font-semibold text-[var(--foreground)]">
           {formatPublicPrice(product.price, product.currency)}
         </p>
-        {showShopName && product.shopName ? (
-          <p className="truncate text-xs text-[var(--muted)]">{product.shopName}</p>
+        {showShopName ? (
+          <p className="truncate text-xs text-[var(--muted)]">
+            {product.categoryName ?? "Sin categoría"}
+          </p>
         ) : null}
       </div>
       <span className="shrink-0 text-xl text-[var(--muted)] transition group-hover:translate-x-0.5 group-hover:text-[var(--accent)]">

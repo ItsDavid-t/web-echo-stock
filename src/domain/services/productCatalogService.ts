@@ -68,6 +68,14 @@ export class ProductCatalogService {
     );
   }
 
+  static normalizeText(value: string): string {
+    return value
+      .normalize("NFD")
+      .replace(/\p{M}/gu, "")
+      .trim()
+      .toLowerCase();
+  }
+
   static filterAndSort(
     products: Product[],
     categories: Category[],
@@ -75,7 +83,7 @@ export class ProductCatalogService {
     sortBy: CatalogSort
   ): Product[] {
     const categoriesById = CategoryTreeService.buildIndex(categories);
-    const normalizedSearch = filters.search.trim().toLowerCase();
+    const normalizedSearch = ProductCatalogService.normalizeText(filters.search ?? "");
 
     const filtered = products.filter((product) => {
       if (filters.categoryId != null && product.categoryId != null) {
@@ -100,17 +108,19 @@ export class ProductCatalogService {
       }
 
       return (
-        product.name.toLowerCase().includes(normalizedSearch) ||
-        String(product.description ?? "")
-          .toLowerCase()
-          .includes(normalizedSearch) ||
-        String(product.categoryName ?? "")
-          .toLowerCase()
-          .includes(normalizedSearch) ||
-        String(product.classification ?? "")
-          .toLowerCase()
-          .includes(normalizedSearch) ||
-        String(product.shopName ?? "").toLowerCase().includes(normalizedSearch)
+        ProductCatalogService.normalizeText(product.name).includes(normalizedSearch) ||
+        ProductCatalogService.normalizeText(String(product.description ?? "")).includes(
+          normalizedSearch
+        ) ||
+        ProductCatalogService.normalizeText(String(product.categoryName ?? "")).includes(
+          normalizedSearch
+        ) ||
+        ProductCatalogService.normalizeText(String(product.classification ?? "")).includes(
+          normalizedSearch
+        ) ||
+        ProductCatalogService.normalizeText(String(product.shopName ?? "")).includes(
+          normalizedSearch
+        )
       );
     });
 

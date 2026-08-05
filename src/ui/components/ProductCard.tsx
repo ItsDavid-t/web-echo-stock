@@ -30,11 +30,11 @@ export function ProductCard({
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0 space-y-1">
             <p className="truncate text-xs font-medium uppercase tracking-wide text-[var(--accent)]">
-              {product.categoryName ?? product.category ?? "Sin categoría"}
+              {product.shopName ?? "Sin tienda"}
             </p>
-            {showShopName && product.shopName ? (
+            {showShopName ? (
               <p className="truncate text-xs text-[var(--muted)]">
-                {product.shopName}
+                {product.categoryName ?? product.category ?? "Sin categoría"}
               </p>
             ) : null}
           </div>
@@ -46,7 +46,7 @@ export function ProductCard({
           {product.name}
         </h2>
         <p className="line-clamp-2 text-sm leading-6 text-[var(--muted)]">
-          {product.description ?? "Toca para ver detalles y contactar."}
+          {product.categoryName ?? product.category ?? "Sin categoría"}
         </p>
         <div className="flex items-center justify-between pt-1 text-sm">
           <span className="text-lg font-semibold text-[var(--foreground)]">
